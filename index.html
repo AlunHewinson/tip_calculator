@@ -5,265 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tip Splitter</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #f5f5f5;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        .card {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-
-        input[type="text"],
-        input[type="number"] {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 8px;
-        }
-
-        button {
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
-        .delete-btn {
-            background: #d9534f;
-            color: white;
-            border: none;
-            border-radius: 4px;
-        }
-
-        .add-btn {
-            margin-top: 10px;
-        }
-
-        .calculate-btn {
-            width: 100%;
-            font-size: 1.2rem;
-            padding: 12px;
-        }
-
-        .result-table {
-            margin-top: 10px;
-        }
-
-        .currency {
-            text-align: right;
-        }
-    </style>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>Tip Splitter</h1>
+    <div class="container">
 
-<div class="card">
-    <h2>Employees</h2>
+        <h1>Tip Splitter</h1>
 
-    <table id="employeeTable">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Hours</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+        <div class="card">
+            <h2>Employees</h2>
 
-    <button class="add-btn" onclick="addEmployee()">Add Employee</button>
-</div>
+            <table id="employeeTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Hours</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
 
-<div class="card">
-    <h2>Tips</h2>
+            <button id="addEmployeeButton">
+                Add Employee
+            </button>
+        </div>
 
-    <label for="totalTips">Total Tips (£)</label>
-    <input type="number" id="totalTips" step="0.01" min="0">
-</div>
+        <div class="card">
+            <h2>Tips</h2>
 
-<div class="card">
-    <button class="calculate-btn" onclick="calculateTips()">
-        Calculate
-    </button>
-</div>
+            <label for="totalTips">
+                Total Tips (£)
+            </label>
 
-<div class="card">
-    <h2>Results</h2>
+            <input
+                id="totalTips"
+                type="number"
+                min="0"
+                step="0.01">
+        </div>
 
-    <table id="resultsTable" class="result-table">
-        <thead>
-            <tr>
-                <th>Employee</th>
-                <th class="currency">Tip Share</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-</div>
+        <div class="card">
+            <button id="calculateButton">
+                Calculate
+            </button>
+        </div>
 
-<script>
+        <div class="card">
+            <h2>Results</h2>
 
-let employees = JSON.parse(
-    localStorage.getItem("employees") || "[]"
-);
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Share</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
-if (employees.length === 0) {
-    employees.push({ name: "", hours: 0 });
-}
+    </div>
 
-function saveEmployees() {
-    localStorage.setItem(
-        "employees",
-        JSON.stringify(employees)
-    );
-}
-
-function renderEmployees() {
-    const tbody =
-        document.querySelector("#employeeTable tbody");
-
-    tbody.innerHTML = "";
-
-    employees.forEach((employee, index) => {
-
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
-            <td>
-                <input
-                    type="text"
-                    value="${employee.name}"
-                    onchange="updateName(${index}, this.value)">
-            </td>
-            <td>
-                <input
-                    type="number"
-                    min="0"
-                    step="0.25"
-                    value="${employee.hours}"
-                    onchange="updateHours(${index}, this.value)">
-            </td>
-            <td>
-                <button
-                    class="delete-btn"
-                    onclick="deleteEmployee(${index})">
-                    Delete
-                </button>
-            </td>
-        `;
-
-        tbody.appendChild(row);
-    });
-
-    saveEmployees();
-}
-
-function addEmployee() {
-    employees.push({
-        name: "",
-        hours: 0
-    });
-
-    renderEmployees();
-}
-
-function deleteEmployee(index) {
-    employees.splice(index, 1);
-
-    if (employees.length === 0) {
-        employees.push({
-            name: "",
-            hours: 0
-        });
-    }
-
-    renderEmployees();
-}
-
-function updateName(index, value) {
-    employees[index].name = value;
-    saveEmployees();
-}
-
-function updateHours(index, value) {
-    employees[index].hours = parseFloat(value) || 0;
-    saveEmployees();
-}
-
-function calculateTips() {
-
-    const totalTips =
-        parseFloat(
-            document.getElementById("totalTips").value
-        ) || 0;
-
-    const totalHours =
-        employees.reduce(
-            (sum, employee) =>
-                sum + (employee.hours || 0),
-            0
-        );
-
-    const resultsBody =
-        document.querySelector("#resultsTable tbody");
-
-    resultsBody.innerHTML = "";
-
-    if (totalHours === 0) {
-        resultsBody.innerHTML =
-            "<tr><td colspan='2'>No hours entered.</td></tr>";
-        return;
-    }
-
-    const ratePerHour =
-        totalTips / totalHours;
-
-    employees.forEach(employee => {
-
-        const share =
-            employee.hours * ratePerHour;
-
-        const row =
-            document.createElement("tr");
-
-        row.innerHTML = `
-            <td>${employee.name || "(Unnamed)"}</td>
-            <td class="currency">
-                £${share.toFixed(2)}
-            </td>
-        `;
-
-        resultsBody.appendChild(row);
-    });
-}
-
-renderEmployees();
-
-</script>
+    <script src="script.js"></script>
 
 </body>
 </html>
